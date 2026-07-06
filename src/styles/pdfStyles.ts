@@ -105,13 +105,11 @@ export const pdfStyles = `
 
 .foto-item {
   width: 32%;
-  height: 220px;
 
   border: 1px solid #ddd;
   border-radius: 4px;
 
   overflow: hidden;
-
   box-sizing: border-box;
 
   page-break-inside: avoid;
@@ -120,9 +118,9 @@ export const pdfStyles = `
 
 .foto-item img {
   width: 100%;
-  height: 100%;
+  height: 300px;
 
-  object-fit: cover;
+  object-fit: contain;
 
   display: block;
 }

@@ -3,8 +3,8 @@ import * as Network from "expo-network";
 import db from "../../database/database";
 import { RelatorioFinalizadoSQLite } from "../../types";
 
-const URL_FLUXO_MECANICO = "";
-const URL_FLUXO_ELETRICO = "";
+const URL_FLUXO_MECANICO = "https://defaulteb4154c51e814c3c9e5da8a547806c.8e.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/6e4c74e6e71c477d8df83af98449c34f/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=M_tcmQF1FZ11XbmBfbXPA81BjWExQ6lykjmLm8jnOvA";
+const URL_FLUXO_ELETRICO = "https://defaulteb4154c51e814c3c9e5da8a547806c.8e.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/6e4c74e6e71c477d8df83af98449c34f/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=M_tcmQF1FZ11XbmBfbXPA81BjWExQ6lykjmLm8jnOvA";
 
 let sincronizando = false;
 
@@ -205,5 +205,6 @@ export const sincronizar = async (): Promise<void> => {
 
 export const temInternet = async (): Promise<boolean> => {
     const state = await Network.getNetworkStateAsync();
-    return state.isConnected || false;
+    const internetReachable = state.isInternetReachable;
+    return Boolean(state.isConnected && (internetReachable ?? true));
 };

@@ -1,4 +1,4 @@
-import { View, Text, Pressable, Alert, Image, ScrollView, InteractionManager  } from "react-native";
+import { View, Text, Pressable, Alert, Image, ScrollView, InteractionManager } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
@@ -72,16 +72,22 @@ export default function ListaRelatorios({ navigation }: any) {
                         const dados = await AsyncStorage.getItem(STORAGE_KEY_RELATORIOS);
                         const lista = JSON.parse(dados || "[]");
                         const relatorio = lista.find((r: any) => r.id === id);
-                        const novaLista = lista.map((r: any) =>
-                            r.id === id ? { ...r, status: "aberto" } : r
-                        );
-                        await AsyncStorage.setItem(STORAGE_KEY_RELATORIOS, JSON.stringify(novaLista));
-                        setRelatoriosAbertos(novaLista.filter((r: any) => r.status === "aberto"));
-                        setRelatoriosFinalizados(novaLista.filter((r: any) => r.status === "finalizado"));
 
-                        // Navega para o formulário correto baseado no tipo
-                        const rota = relatorio?.tipoInspecao === "eletrica" ? ROUTES.FORMULARIO_ELETRICO : ROUTES.FORMULARIO_MECANICO;
-                        navigation.navigate(rota, { relatorio });
+                        if (relatorio) {
+                            // Muda status para "aberto" enquanto está sendo editado
+                            const novaLista = lista.map((r: any) =>
+                                r.id === id ? { ...r, status: "aberto" } : r
+                            );
+                            await AsyncStorage.setItem(STORAGE_KEY_RELATORIOS, JSON.stringify(novaLista));
+                            setRelatoriosAbertos(novaLista.filter((r: any) => r.status === "aberto"));
+                            setRelatoriosFinalizados(novaLista.filter((r: any) => r.status === "finalizado"));
+
+                            // Navega para o formulário correto baseado no tipo
+                            const rota = relatorio?.tipoInspecao === "eletrica" ? ROUTES.FORMULARIO_ELETRICO : ROUTES.FORMULARIO_MECANICO;
+                            // Passa o relatório com status já atualizado
+                            const relatorioParaEditar = { ...relatorio, status: "aberto" };
+                            navigation.navigate(rota, { relatorio: relatorioParaEditar });
+                        }
                     },
                 },
             ]

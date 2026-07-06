@@ -4,6 +4,8 @@ import {
 import { styles } from "../styles";
 import { TIPO_INSPECAO } from "../constants";
 import { MedicoesEletricas } from "../components/MedicoesEletricas";
+import equipamentos from '../data/equipamentos.json';
+import { useState } from "react";
 
 
 export function FormularioRelatorioUI(props: any) {
@@ -46,8 +48,7 @@ export function FormularioRelatorioUI(props: any) {
         observacaoGeral, setObservacaoGeral
     } = props;
 
-    const isEletrica =
-        tipoInspecao === TIPO_INSPECAO.ELETRICA;
+    const isEletrica = tipoInspecao === TIPO_INSPECAO.ELETRICA;
 
     const grupos = Array.from(
         new Set(
@@ -56,16 +57,33 @@ export function FormularioRelatorioUI(props: any) {
                 .map((item: any) => String(item.grupo))
         )
     );
+
+    const [sugestoes, setSugestoes] = useState<string[][]>([]);
+    const [inputAtivo, setInputAtivo] = useState<number | null>(null);
+
+    const buscarEquipamento = (texto: string, index: number) => {
+        if (texto.length < 3) {
+            setSugestoes([]);
+            setInputAtivo(null);
+            return;
+        }
+        const filtrados = (equipamentos as string[][])
+            .filter(([fn]) => fn.startsWith(texto))
+            .slice(0, 5);
+        setSugestoes(filtrados);
+        setInputAtivo(index);
+    };
+
     return (
         <KeyboardAvoidingView
             style={{ flex: 1 }}
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
-            keyboardVerticalOffset={100}
+            behavior={Platform.OS === "ios" ? "padding" : undefined}
+            keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
         >
             <ScrollView
                 style={styles.container}
                 keyboardShouldPersistTaps="handled"
-                contentContainerStyle={{ paddingBottom: 20 }}
+                contentContainerStyle={{ paddingBottom: 40 }}
             >
                 {/* CABEÇALHO */}
                 <View style={styles.header}>
@@ -93,7 +111,6 @@ export function FormularioRelatorioUI(props: any) {
                 {isEletrica ? (
                     <View style={{ marginBottom: 15, marginTop: 10 }}>
                         <Text style={styles.label}>Tipo de inspeção:</Text>
-
                         <TextInput
                             style={styles.input}
                             value="Inspeção Elétrica - Transformadores"
@@ -112,6 +129,7 @@ export function FormularioRelatorioUI(props: any) {
                         />
                     </View>
                 )}
+
                 <View style={{ marginBottom: 15, marginTop: 10 }}>
                     <Text style={styles.label}>Unidade:</Text>
                     {erroUnidade && (
@@ -244,25 +262,18 @@ export function FormularioRelatorioUI(props: any) {
                 <View style={styles.sectionHeader}>
                     <Text style={styles.sectionText}>ESCOPOS DA INSPEÇÃO</Text>
                 </View>
+
                 {grupos.map((grupo: any) => (
                     <View key={grupo}>
-
                         <View style={styles.sectionHeader}>
-                            <Text style={styles.sectionText}>
-                                {grupo}
-                            </Text>
+                            <Text style={styles.sectionText}>{grupo}</Text>
                         </View>
 
                         {escopos
                             .filter((item: any) => item.grupo === grupo)
                             .map((item: any) => {
-
-                                const index = escopos.findIndex(
-                                    (e: any) => e.id === item.id
-                                );
-
-                                const errosItem =
-                                    erroEscopos?.[item.id] || {};
+                                const index = escopos.findIndex((e: any) => e.id === item.id);
+                                const errosItem = erroEscopos?.[item.id] || {};
 
                                 return (
                                     <View
@@ -275,28 +286,48 @@ export function FormularioRelatorioUI(props: any) {
                                         <Text style={styles.escopoTitle}>Item {index + 1}</Text>
 
                                         {isEletrica && (
-                                            <Text
-                                                style={{
-                                                    fontSize: 16,
-                                                    fontWeight: "600",
-                                                    marginBottom: 10,
-                                                }}
-                                            >
+                                            <Text style={{ fontSize: 16, fontWeight: "600", marginBottom: 10 }}>
                                                 {item.tituloItem}
                                             </Text>
                                         )}
+
                                         {!isEletrica && (
-                                            <TextInput
-                                                style={[styles.input, errosItem.titulo && styles.inputError]}
-                                                placeholder="Nome do item inspecionado"
-                                                placeholderTextColor="#9CA3AF"
-                                                value={item.tituloItem}
-                                                onChangeText={(text) => {
-                                                    const copia = [...escopos];
-                                                    copia[index].tituloItem = text;
-                                                    setEscopos(copia);
-                                                }}
-                                            />
+                                            <>
+                                                <TextInput
+                                                    style={[styles.input, errosItem.titulo && styles.inputError]}
+                                                    placeholder="Nome do item inspecionado"
+                                                    placeholderTextColor="#9CA3AF"
+                                                    value={item.tituloItem}
+                                                    onChangeText={(text) => {
+                                                        const copia = [...escopos];
+                                                        copia[index].tituloItem = text;
+                                                        setEscopos(copia);
+                                                        buscarEquipamento(text, index);
+                                                    }}
+                                                    onBlur={() => {
+                                                        setTimeout(() => setSugestoes([]), 200);
+                                                    }}
+                                                />
+                                                {inputAtivo === index && sugestoes.length > 0 && (
+                                                    <View style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 4, marginTop: 2 }}>
+                                                        {sugestoes.map(([fn, nome]) => (
+                                                            <Pressable
+                                                                key={fn}
+                                                                onPress={() => {
+                                                                    const copia = [...escopos];
+                                                                    copia[index].tituloItem = `${fn} - ${nome}`;
+                                                                    setEscopos(copia);
+                                                                    setSugestoes([]);
+                                                                    setInputAtivo(null);
+                                                                }}
+                                                                style={{ padding: 10, borderBottomWidth: 1, borderColor: '#eee', backgroundColor: '#f9f9f9' }}
+                                                            >
+                                                                <Text style={{ fontSize: 13, color: '#333' }}>{fn} - {nome}</Text>
+                                                            </Pressable>
+                                                        ))}
+                                                    </View>
+                                                )}
+                                            </>
                                         )}
 
                                         {!isEletrica && (
@@ -307,6 +338,7 @@ export function FormularioRelatorioUI(props: any) {
                                                 <Text style={styles.removeEscopoText}>Remover item</Text>
                                             </Pressable>
                                         )}
+
                                         {item.id === "10" && (
                                             <MedicoesEletricas
                                                 item={item}
@@ -350,69 +382,41 @@ export function FormularioRelatorioUI(props: any) {
 
                                         <View style={styles.statusRow}>
                                             <Pressable
-                                                style={[
-                                                    styles.statusButton,
-                                                    item.status === "conforme" && styles.statusConforme
-                                                ]}
+                                                style={[styles.statusButton, item.status === "conforme" && styles.statusConforme]}
                                                 onPress={() => {
                                                     const copia = [...escopos];
                                                     copia[index].status = "conforme";
                                                     setEscopos(copia);
                                                 }}
                                             >
-                                                <Text
-                                                    style={{
-                                                        color: item.status === "conforme" ? "white" : "#334155",
-                                                        fontWeight: "600"
-                                                    }}
-                                                >
+                                                <Text style={{ color: item.status === "conforme" ? "white" : "#334155", fontWeight: "600" }}>
                                                     Conforme
                                                 </Text>
                                             </Pressable>
 
                                             <Pressable
-                                                style={[
-                                                    styles.statusButton,
-                                                    item.status === "nao_conforme" && styles.statusNaoConforme
-                                                ]}
+                                                style={[styles.statusButton, item.status === "nao_conforme" && styles.statusNaoConforme]}
                                                 onPress={() => {
                                                     const copia = [...escopos];
                                                     copia[index].status = "nao_conforme";
                                                     setEscopos(copia);
                                                 }}
                                             >
-                                                <Text
-                                                    style={{
-                                                        color: item.status === "nao_conforme" ? "white" : "#334155",
-                                                        fontWeight: "600"
-                                                    }}
-                                                >
+                                                <Text style={{ color: item.status === "nao_conforme" ? "white" : "#334155", fontWeight: "600" }}>
                                                     Não conforme
                                                 </Text>
                                             </Pressable>
 
                                             {tipoInspecao === "eletrica" && (
                                                 <Pressable
-                                                    style={[
-                                                        styles.statusButton,
-                                                        item.status === "nao_aplicavel" &&
-                                                        styles.statusNaoAplicavel
-                                                    ]}
+                                                    style={[styles.statusButton, item.status === "nao_aplicavel" && styles.statusNaoAplicavel]}
                                                     onPress={() => {
                                                         const copia = [...escopos];
                                                         copia[index].status = "nao_aplicavel";
                                                         setEscopos(copia);
                                                     }}
                                                 >
-                                                    <Text
-                                                        style={{
-                                                            color:
-                                                                item.status === "nao_aplicavel"
-                                                                    ? "white"
-                                                                    : "#334155",
-                                                            fontWeight: "600"
-                                                        }}
-                                                    >
+                                                    <Text style={{ color: item.status === "nao_aplicavel" ? "white" : "#334155", fontWeight: "600" }}>
                                                         Não Aplicável
                                                     </Text>
                                                 </Pressable>
@@ -453,26 +457,21 @@ export function FormularioRelatorioUI(props: any) {
                                                     />
                                                 )}
 
-                                                {!isEletrica &&
-                                                    item.status === "nao_conforme" && (
-                                                        <TextInput
-                                                            multiline
-                                                            textAlignVertical="top"
-                                                            style={[
-                                                                styles.textArea,
-                                                                errosItem.recomendacao &&
-                                                                styles.inputError
-                                                            ]}
-                                                            placeholder="Recomendações *"
-                                                            placeholderTextColor="#9CA3AF"
-                                                            value={item.recomendacao}
-                                                            onChangeText={(text) => {
-                                                                const copia = [...escopos];
-                                                                copia[index].recomendacao = text;
-                                                                setEscopos(copia);
-                                                            }}
-                                                        />
-                                                    )}
+                                                {!isEletrica && item.status === "nao_conforme" && (
+                                                    <TextInput
+                                                        multiline
+                                                        textAlignVertical="top"
+                                                        style={[styles.textArea, errosItem.recomendacao && styles.inputError]}
+                                                        placeholder="Recomendações *"
+                                                        placeholderTextColor="#9CA3AF"
+                                                        value={item.recomendacao}
+                                                        onChangeText={(text) => {
+                                                            const copia = [...escopos];
+                                                            copia[index].recomendacao = text;
+                                                            setEscopos(copia);
+                                                        }}
+                                                    />
+                                                )}
                                             </>
                                         )}
                                     </View>
@@ -480,6 +479,8 @@ export function FormularioRelatorioUI(props: any) {
                             })}
                     </View>
                 ))}
+
+                {/* FORA DO MAP */}
 
                 {!isEletrica && (
                     <Pressable
@@ -495,24 +496,16 @@ export function FormularioRelatorioUI(props: any) {
                         <View style={styles.sectionHeader}>
                             <Text style={styles.sectionText}>OBSERVAÇÕES GERAIS</Text>
                         </View>
-
                         <TextInput
-                            style={[
-                                styles.input,
-                                {
-                                    height: 120,
-                                    textAlignVertical: "top",
-                                },
-                            ]}
+                            style={[styles.input, { height: 120, textAlignVertical: "top" }]}
                             multiline
                             placeholder="Digite observações gerais da inspeção..."
                             value={observacaoGeral}
-                            onChangeText={(texto) => {
-                                setObservacaoGeral(texto);
-                            }}
+                            onChangeText={(texto) => setObservacaoGeral(texto)}
                         />
                     </>
                 )}
+
                 {/* ASSINATURAS */}
                 <View style={styles.sectionHeader}>
                     <Text style={styles.sectionText}>ASSINATURAS</Text>
@@ -571,6 +564,7 @@ export function FormularioRelatorioUI(props: any) {
                         <Text style={styles.buttonText}>Finalizar relatório</Text>
                     </Pressable>
                 </View>
+
             </ScrollView>
         </KeyboardAvoidingView>
     );

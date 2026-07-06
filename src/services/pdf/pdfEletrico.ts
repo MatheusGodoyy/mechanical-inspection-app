@@ -3,7 +3,6 @@ import * as ImageManipulator from "expo-image-manipulator";
 import * as Print from "expo-print";
 import { Alert } from "react-native";
 import { pdfStyles } from "../../styles/pdfStyles";
-import { DadosInspecao, PDFGenerationResult } from "../../types";
 
 export async function gerarPDF(relatorio: any) {
   try {
@@ -155,7 +154,7 @@ export async function gerarPDF(relatorio: any) {
             <div class="section">
               <div class="section-title">Dados da Inspeção</div>
               <p><b>Título:</b> ${relatorio.tituloInspecao}</p>
-              <p><b>Tipo:</b> ${relatorio.tipoInspecao}</p>
+              <p><b>Tipo:</b> Inspeção Elétrica - Transformadores</p>
               <p><b>Unidade:</b> ${relatorio.unidade}</p>
               <p><b>Data atual:</b> ${relatorio.data1}</p>
               <p><b>Próxima inspeção:</b> ${relatorio.data2}</p>

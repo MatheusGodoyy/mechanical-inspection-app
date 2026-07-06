@@ -13,6 +13,7 @@ import { ActivityIndicator } from "react-native";
 import { styles } from "../styles";
 import { ROUTES, TIPO_INSPECAO } from "../constants";
 import { ENV } from '../config';
+import { FotoEditorModal } from "../components/FotoEditorModal";
 
 const { STORAGE_KEY_RELATORIOS } = ENV;
 
@@ -22,6 +23,7 @@ export default function App({ navigation, route }: any) {
     const signatureRef = useRef<any>(null);
     const SignaturePad = Signature as any;
     const [relatorioAtualId, setRelatorioAtualId] = useState<string | null>(null);
+    const [statusAtual, setStatusAtual] = useState<"aberto" | "finalizado">("aberto");
     const [assinatura, setAssinatura] = useState<string | null>(null);
     const [assinando, setAssinando] = useState(false);
     const [tituloInspecao, setTituloInspecao] = useState("");
@@ -37,6 +39,9 @@ export default function App({ navigation, route }: any) {
     const [erroData1, setErroData1] = useState(false);
     const [erroData2, setErroData2] = useState(false);
     const [fotoSelecionada, setFotoSelecionada] = useState<string | null>(null);
+    const [editorFotoVisible, setEditorFotoVisible] = useState(false);
+    const [fotoEmEdicao, setFotoEmEdicao] = useState<string | null>(null);
+    const [indiceEscopoFoto, setIndiceEscopoFoto] = useState<number | null>(null);
     const [unidade, setUnidade] = useState("");
     const insets = useSafeAreaInsets();
     const [finalizando, setFinalizando] = useState(false);
@@ -154,7 +159,7 @@ export default function App({ navigation, route }: any) {
 
         const novoRelatorio = {
             id,
-            status: "aberto",
+            status: statusAtual,
             tituloInspecao,
             tipoInspecao,
             unidade,
@@ -173,8 +178,8 @@ export default function App({ navigation, route }: any) {
         const index = lista.findIndex((r: any) => r.id === id);
 
         if (index !== -1) {
-            // Atualiza existente
-            lista[index] = novoRelatorio;
+            // Atualiza existente, preservando dados que não foram alterados
+            lista[index] = { ...lista[index], ...novoRelatorio };
         } else {
             // Cria novo
             lista.push(novoRelatorio);
@@ -225,6 +230,7 @@ export default function App({ navigation, route }: any) {
     useEffect(() => {
         if (!relatorio) return;
         setRelatorioAtualId(relatorio.id);
+        setStatusAtual(relatorio.status || "aberto");
         setTituloInspecao(relatorio.tituloInspecao);
         setTipoInspecao(relatorio.tipoInspecao);
         setUnidade(relatorio.unidade);
@@ -236,7 +242,7 @@ export default function App({ navigation, route }: any) {
         setLocalInstalacao(relatorio.localInstalacao);
         setPlano(relatorio.plano);
         setListaTarefas(relatorio.listaTarefas);
-        setEscopos(relatorio.escopos);
+        setEscopos(relatorio.escopos || []);
         setAssinatura(relatorio.assinatura);
     }, []);
 
@@ -249,6 +255,8 @@ export default function App({ navigation, route }: any) {
         setFinalizando(true);
 
         try {
+            // Salva silenciosamente antes de finalizar para garantir que todos os dados estejam persistidos
+            await salvarSilencioso();
 
             let valido = true;
 
@@ -495,9 +503,9 @@ export default function App({ navigation, route }: any) {
                 console.warn("Erro ao salvar na galeria:", e?.message, JSON.stringify(e));
             }
 
-            setEscopos((prev: any[]) => prev.map((item, i) =>
-                i === index ? { ...item, fotos: [...item.fotos, destino] } : item
-            ));
+            setFotoEmEdicao(destino);
+            setIndiceEscopoFoto(index);
+            setEditorFotoVisible(true);
         }
     };
 
@@ -516,15 +524,20 @@ export default function App({ navigation, route }: any) {
             await FileSystem.copyAsync({ from: uri, to: destino });
 
             // ✅ mesma correção na galeria também
-            setEscopos((prev: any[]) => {
-                const copia = prev.map((item, i) =>
-                    i === index
-                        ? { ...item, fotos: [...item.fotos, destino] }
-                        : item
-                );
-                return copia;
-            });
+            setFotoEmEdicao(destino);
+            setIndiceEscopoFoto(index);
+            setEditorFotoVisible(true);
         }
+    };
+
+    const finalizarEdicaoFoto = (uriEditada: string) => {
+        if (indiceEscopoFoto === null) return;
+        setEscopos((prev: any[]) => prev.map((item, i) =>
+            i === indiceEscopoFoto ? { ...item, fotos: [...item.fotos, uriEditada] } : item
+        ));
+        setEditorFotoVisible(false);
+        setFotoEmEdicao(null);
+        setIndiceEscopoFoto(null);
     };
 
     const escolherImagem = (index: number) => {
@@ -576,6 +589,17 @@ export default function App({ navigation, route }: any) {
     return (
         <SafeAreaView style={{ flex: 1 }}>
             <View style={{ flex: 1 }}>
+                <FotoEditorModal
+                    visible={editorFotoVisible}
+                    imageUri={fotoEmEdicao}
+                    onCancel={() => {
+                        setEditorFotoVisible(false);
+                        setFotoEmEdicao(null);
+                        setIndiceEscopoFoto(null);
+                    }}
+                    onSave={finalizarEdicaoFoto}
+                />
+
                 <FormularioRelatorioUI
                     tituloInspecao={tituloInspecao}
                     setTituloInspecao={setTituloInspecao}
