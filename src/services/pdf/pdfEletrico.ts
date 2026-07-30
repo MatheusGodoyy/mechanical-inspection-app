@@ -48,64 +48,10 @@ export async function gerarPDF(relatorio: any) {
               `
               )
               .join("");
-            const medicoesHTML =
-              item.tituloItem === "Condição Medidores / Indicadores" &&
-                item.medicoes
-                ? `
-        <div style="margin-top:10px; border:1px solid #ccc; padding:10px;">
-
-            <h4>QMT</h4>
-
-            <p>
-                <b>Tensão  </b>
-                <b>R</b> = ${item.medicoes?.qmt?.tensao?.r || "-"} |
-                <b>S</b> = ${item.medicoes?.qmt?.tensao?.s || "-"} |
-                <b>T</b> = ${item.medicoes?.qmt?.tensao?.t || "-"}
-            </p>
-
-            <p>
-                <b>Corrente </b>
-                <b>R</b> = ${item.medicoes?.qmt?.corrente?.r || "-"} |
-                <b>S</b> = ${item.medicoes?.qmt?.corrente?.s || "-"} |
-                <b>T</b> = ${item.medicoes?.qmt?.corrente?.t || "-"}
-            </p>
-
-            <p>
-                <b>Potência:</b>
-                ${item.medicoes?.qmt?.potencia || "-"} MW
-            </p>
-
-            <hr />
-
-            <h4>QGBT</h4>
-
-            <p>
-                <b>Tensão </b>
-                <b>R</b> = ${item.medicoes?.qgbt?.tensao?.r || "-"} |
-                <b>S</b> = ${item.medicoes?.qgbt?.tensao?.s || "-"} |
-                <b>T</b> = ${item.medicoes?.qgbt?.tensao?.t || "-"}
-            </p>
-
-            <p>
-                <b>Corrente </b>
-                <b>R</b> = ${item.medicoes?.qgbt?.corrente?.r || "-"} |
-                <b>S</b> = ${item.medicoes?.qgbt?.corrente?.s || "-"} |
-                <b>T</b> = ${item.medicoes?.qgbt?.corrente?.t || "-"}
-            </p>
-
-            <p>
-                <b>Potência:</b>
-                ${item.medicoes?.qgbt?.potencia || "-"} MW
-            </p>
-
-        </div>
-        `
-                : "";
 
             return `
               <div class="item">
                 <h3>Item ${index + 1} - ${item.tituloItem}</h3>
-                ${medicoesHTML} 
                 <p>
                     <b>Status:</b>
                     <span class="${item.status === "conforme"

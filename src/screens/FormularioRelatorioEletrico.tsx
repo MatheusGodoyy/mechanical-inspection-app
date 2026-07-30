@@ -13,7 +13,6 @@ import { ActivityIndicator } from "react-native";
 import { styles } from "../styles";
 import { ROUTES, TIPO_INSPECAO } from "../constants";
 import { ENV } from '../config';
-import { FotoEditorModal } from "../components/FotoEditorModal";
 
 const { STORAGE_KEY_RELATORIOS } = ENV;
 
@@ -108,19 +107,6 @@ const ITENS_ELETRICOS = [
         observacao: "",
         fotos: [],
         exigeFoto: true,
-
-        medicoes: {
-            qmt: {
-                tensao: { r: "", s: "", t: "" },
-                corrente: { r: "", s: "", t: "" },
-                potencia: "",
-            },
-            qgbt: {
-                tensao: { r: "", s: "", t: "" },
-                corrente: { r: "", s: "", t: "" },
-                potencia: "",
-            },
-        },
     },
     {
         id: "11",
@@ -134,7 +120,7 @@ const ITENS_ELETRICOS = [
     {
         id: "12",
         grupo: "Condição Geral",
-        tituloItem: "Condição Termostato do Transformador",
+        tituloItem: "Cabos e Conectores de Entrada",
         status: null,
         observacao: "",
         fotos: [],
@@ -143,7 +129,7 @@ const ITENS_ELETRICOS = [
     {
         id: "13",
         grupo: "Condição Geral",
-        tituloItem: "Cabos e Conectores de Entrada",
+        tituloItem: "Cabos Secundários e Dutos",
         status: null,
         observacao: "",
         fotos: [],
@@ -152,7 +138,7 @@ const ITENS_ELETRICOS = [
     {
         id: "14",
         grupo: "Condição Geral",
-        tituloItem: "Cabos Secundários e Dutos",
+        tituloItem: "Condição do Resistor de Aterramento de Neutro, Enclausuramento e Isoladores",
         status: null,
         observacao: "",
         fotos: [],
@@ -161,7 +147,7 @@ const ITENS_ELETRICOS = [
     {
         id: "15",
         grupo: "Condição Geral",
-        tituloItem: "Condição do Resistor de Aterramento de Neutro, Enclausuramento e Isoladores",
+        tituloItem: "Eletrocalhas e Suportes",
         status: null,
         observacao: "",
         fotos: [],
@@ -170,7 +156,7 @@ const ITENS_ELETRICOS = [
     {
         id: "16",
         grupo: "Condição Geral",
-        tituloItem: "Conduites e Conexões seguras",
+        tituloItem: "Condição da Contenção de Óleo",
         status: null,
         observacao: "",
         fotos: [],
@@ -179,7 +165,7 @@ const ITENS_ELETRICOS = [
     {
         id: "17",
         grupo: "Condição Geral",
-        tituloItem: "Eletrocalhas e Suportes",
+        tituloItem: "Comutador de Tap Bloqueado?",
         status: null,
         observacao: "",
         fotos: [],
@@ -188,24 +174,6 @@ const ITENS_ELETRICOS = [
     {
         id: "18",
         grupo: "Condição Geral",
-        tituloItem: "Condição da Contenção de Óleo",
-        status: null,
-        observacao: "",
-        fotos: [],
-        exigeFoto: true,
-    },
-    {
-        id: "19",
-        grupo: "Condição Geral",
-        tituloItem: "Comutador de Tap Bloqueado?",
-        status: null,
-        observacao: "",
-        fotos: [],
-        exigeFoto: true,
-    },
-    {
-        id: "20",
-        grupo: "Condição Geral",
         tituloItem: "Aparelho Ultrassônico Ex Rater",
         status: null,
         observacao: "",
@@ -213,7 +181,7 @@ const ITENS_ELETRICOS = [
         exigeFoto: true,
     },
     {
-        id: "21",
+        id: "19",
         grupo: "Checagem Audiovisual",
         tituloItem: "Vazamento de Óleo",
         status: null,
@@ -222,7 +190,7 @@ const ITENS_ELETRICOS = [
         exigeFoto: true,
     },
     {
-        id: "22",
+        id: "20",
         grupo: "Checagem Audiovisual",
         tituloItem: "Sons Anormais",
         status: null,
@@ -231,7 +199,7 @@ const ITENS_ELETRICOS = [
         exigeFoto: true,
     },
     {
-        id: "23",
+        id: "21",
         grupo: "Checagem Audiovisual",
         tituloItem: "Respiro Dessecante Sílica Gel",
         status: null,
@@ -240,43 +208,25 @@ const ITENS_ELETRICOS = [
         exigeFoto: true,
     },
     {
+        id: "22",
+        grupo: "Medições",
+        tituloItem: "Temperatura Máxima do Óleo / Deslizamento",
+        status: null,
+        observacao: "",
+        fotos: [],
+        exigeFoto: true,
+    },
+    {
+        id: "23",
+        grupo: "Medições",
+        tituloItem: "Temperatura Máxima (Enrolamento) / Deslizamento",
+        status: null,
+        observacao: "",
+        fotos: [],
+        exigeFoto: true,
+    },
+    {
         id: "24",
-        grupo: "Medições",
-        tituloItem: "Temperatura Máxima do Óleo",
-        status: null,
-        observacao: "",
-        fotos: [],
-        exigeFoto: true,
-    },
-    {
-        id: "25",
-        grupo: "Medições",
-        tituloItem: "Ponto de Deslizamento",
-        status: null,
-        observacao: "",
-        fotos: [],
-        exigeFoto: true,
-    },
-    {
-        id: "26",
-        grupo: "Medições",
-        tituloItem: "Temperatura Máxima (Enrolamento)",
-        status: null,
-        observacao: "",
-        fotos: [],
-        exigeFoto: true,
-    },
-    {
-        id: "27",
-        grupo: "Medições",
-        tituloItem: "Ponto de Deslizamento",
-        status: null,
-        observacao: "",
-        fotos: [],
-        exigeFoto: true,
-    },
-    {
-        id: "28",
         grupo: "Medições",
         tituloItem: "Pressão do Tanque",
         status: null,
@@ -285,7 +235,7 @@ const ITENS_ELETRICOS = [
         exigeFoto: true,
     },
     {
-        id: "29",
+        id: "25",
         grupo: "Medições",
         tituloItem: "Medidor do Nível de Fluído",
         status: null,
@@ -294,52 +244,16 @@ const ITENS_ELETRICOS = [
         exigeFoto: true,
     },
     {
-        id: "30",
+        id: "26",
         grupo: "Temperatura do Cubículo",
-        tituloItem: "Entrada do Cubículo",
+        tituloItem: "Entrada/Saída do Varix",
         status: null,
         observacao: "",
         fotos: [],
         exigeFoto: true,
     },
     {
-        id: "31",
-        grupo: "Temperatura do Cubículo",
-        tituloItem: "Saída do Cubículo",
-        status: null,
-        observacao: "",
-        fotos: [],
-        exigeFoto: true,
-    },
-    {
-        id: "32",
-        grupo: "Verificações Funcionais",
-        tituloItem: "Resistências de Aquecimento do Compartimento Primário",
-        status: null,
-        observacao: "",
-        fotos: [],
-        exigeFoto: true,
-    },
-    {
-        id: "33",
-        grupo: "Verificações Funcionais",
-        tituloItem: "Resistências de Aquecimento do Compartimento Secundário",
-        status: null,
-        observacao: "",
-        fotos: [],
-        exigeFoto: true,
-    },
-    {
-        id: "34",
-        grupo: "Verificações Funcionais",
-        tituloItem: "Bandeirola do Dispositivo de Alívio de Pressão",
-        status: null,
-        observacao: "",
-        fotos: [],
-        exigeFoto: true,
-    },
-    {
-        id: "35",
+        id: "27",
         grupo: "Verificações Funcionais",
         tituloItem: "Trip do Circuito Primário (86 Bloqueio) Lâmpada de monitoramento está acesa?",
         status: null,
@@ -348,7 +262,7 @@ const ITENS_ELETRICOS = [
         exigeFoto: true,
     },
     {
-        id: "36",
+        id: "28",
         grupo: "Identificação",
         tituloItem: "Número de está Identificação Legível",
         status: null,
@@ -357,7 +271,7 @@ const ITENS_ELETRICOS = [
         exigeFoto: true,
     },
     {
-        id: "37",
+        id: "29",
         grupo: "Identificação",
         tituloItem: "A placa de identificação do Transformador está legível",
         status: null,
@@ -389,8 +303,6 @@ export default function App({ navigation, route }: any) {
     const [erroData1, setErroData1] = useState(false);
     const [erroData2, setErroData2] = useState(false);
     const [fotoSelecionada, setFotoSelecionada] = useState<string | null>(null);
-    const [editorFotoVisible, setEditorFotoVisible] = useState(false);
-    const [fotoEmEdicao, setFotoEmEdicao] = useState<string | null>(null);
     const [indiceEscopoFoto, setIndiceEscopoFoto] = useState<number | null>(null);
     const [unidade, setUnidade] = useState("");
     const insets = useSafeAreaInsets();
@@ -495,45 +407,51 @@ export default function App({ navigation, route }: any) {
 
     // Salvar silencioso (sem Alert) — usado no auto-save ao sair
     const salvarSilencioso = async () => {
-        const dados = await AsyncStorage.getItem(STORAGE_KEY_RELATORIOS);
-        const lista = JSON.parse(dados || "[]");
+        console.log("[AutoSave] Iniciando salvamento automático:", new Date().toISOString());
+        try {
+            const dados = await AsyncStorage.getItem(STORAGE_KEY_RELATORIOS);
+            const lista = JSON.parse(dados || "[]");
 
-        let id = relatorioAtualId;
-        if (!id) {
-            id = Date.now().toString();
-            setRelatorioAtualId(id);
+            let id = relatorioAtualId;
+            if (!id) {
+                id = Date.now().toString();
+                setRelatorioAtualId(id);
+            }
+
+            const novoRelatorio = {
+                id,
+                status: statusAtual,
+                tituloInspecao,
+                tipoInspecao,
+                unidade,
+                data1,
+                data2,
+                responsavel,
+                fnEquipamento,
+                nomeEquipamento,
+                localInstalacao,
+                plano,
+                listaTarefas,
+                escopos,
+                observacaoGeral,
+                assinatura,
+            };
+
+            const index = lista.findIndex((r: any) => r.id === id);
+
+            if (index !== -1) {
+                // Atualiza existente, preservando dados que não foram alterados
+                lista[index] = { ...lista[index], ...novoRelatorio };
+            } else {
+                // Cria novo
+                lista.push(novoRelatorio);
+            }
+
+            await AsyncStorage.setItem(STORAGE_KEY_RELATORIOS, JSON.stringify(lista));
+            console.log("[AutoSave] Salvamento automático concluído para relatório:", id);
+        } catch (err) {
+            console.warn("[AutoSave] Erro durante salvamento automático:", err);
         }
-
-        const novoRelatorio = {
-            id,
-            status: statusAtual,
-            tituloInspecao,
-            tipoInspecao,
-            unidade,
-            data1,
-            data2,
-            responsavel,
-            fnEquipamento,
-            nomeEquipamento,
-            localInstalacao,
-            plano,
-            listaTarefas,
-            escopos,
-            observacaoGeral,
-            assinatura,
-        };
-
-        const index = lista.findIndex((r: any) => r.id === id);
-
-        if (index !== -1) {
-            // Atualiza existente, preservando dados que não foram alterados
-            lista[index] = { ...lista[index], ...novoRelatorio };
-        } else {
-            // Cria novo
-            lista.push(novoRelatorio);
-        }
-
-        await AsyncStorage.setItem(STORAGE_KEY_RELATORIOS, JSON.stringify(lista));
     };
 
     // Salvar com Alert — usado pelo botão manual
@@ -564,11 +482,34 @@ export default function App({ navigation, route }: any) {
         const unsubscribe = navigation.addListener("beforeRemove", async () => {
 
             if (!foiFinalizado.current) {  // ← adiciona essa verificação
+                console.log("[AutoSave] Detected navigation leaving screen, iniciando salvarSilencioso()");
                 await salvarSilencioso();
+                console.log("[AutoSave] salvarSilencioso() finalizado");
             }
 
         });
         return unsubscribe;
+    }, [
+        tituloInspecao, tipoInspecao, unidade, data1, data2, responsavel,
+        fnEquipamento, nomeEquipamento, localInstalacao, plano, listaTarefas,
+        escopos, observacaoGeral, assinatura, relatorioAtualId,
+    ]);
+
+    // Auto-save on any relevant change (debounced)
+    const autoSaveTimerRef = useRef<any>(null);
+    useEffect(() => {
+        if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+        autoSaveTimerRef.current = setTimeout(async () => {
+            if (!foiFinalizado.current) {
+                console.log("[AutoSave] Mudança detectada — salvando automaticamente");
+                await salvarSilencioso();
+                console.log("[AutoSave] Salvamento automático por mudança concluído");
+            }
+        }, 800);
+
+        return () => {
+            if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+        };
     }, [
         tituloInspecao, tipoInspecao, unidade, data1, data2, responsavel,
         fnEquipamento, nomeEquipamento, localInstalacao, plano, listaTarefas,
@@ -829,7 +770,7 @@ export default function App({ navigation, route }: any) {
         const { status } = await ImagePicker.requestCameraPermissionsAsync();
         if (status !== "granted") { Alert.alert("Permissão necessária", "Precisamos da câmera"); return; }
 
-        const result = await ImagePicker.launchCameraAsync({ quality: 0.7, allowsEditing: true });
+        const result = await ImagePicker.launchCameraAsync({ quality: 0.7, allowsEditing: false });
 
         if (!result.canceled) {
             const uri = result.assets[0].uri;
@@ -848,9 +789,9 @@ export default function App({ navigation, route }: any) {
                 console.warn("Erro ao salvar na galeria:", e?.message, JSON.stringify(e));
             }
 
-            setFotoEmEdicao(destino);
-            setIndiceEscopoFoto(index);
-            setEditorFotoVisible(true);
+            const escopoIndex = index;
+            setIndiceEscopoFoto(escopoIndex);
+            finalizarEdicaoFoto(destino, escopoIndex);
         }
     };
 
@@ -868,20 +809,18 @@ export default function App({ navigation, route }: any) {
             const destino = FileSystem.documentDirectory + nomeArquivo;
             await FileSystem.copyAsync({ from: uri, to: destino });
 
-            // ✅ mesma correção na galeria também
-            setFotoEmEdicao(destino);
-            setIndiceEscopoFoto(index);
-            setEditorFotoVisible(true);
+            const escopoIndex = index;
+            setIndiceEscopoFoto(escopoIndex);
+            finalizarEdicaoFoto(destino, escopoIndex);
         }
     };
 
-    const finalizarEdicaoFoto = (uriEditada: string) => {
-        if (indiceEscopoFoto === null) return;
+    const finalizarEdicaoFoto = (uriEditada: string, index: number | null = null) => {
+        const escopoIndex = index ?? indiceEscopoFoto;
+        if (escopoIndex === null) return;
         setEscopos((prev: any[]) => prev.map((item, i) =>
-            i === indiceEscopoFoto ? { ...item, fotos: [...item.fotos, uriEditada] } : item
+            i === escopoIndex ? { ...item, fotos: [...item.fotos, uriEditada] } : item
         ));
-        setEditorFotoVisible(false);
-        setFotoEmEdicao(null);
         setIndiceEscopoFoto(null);
     };
 
@@ -934,17 +873,6 @@ export default function App({ navigation, route }: any) {
     return (
         <SafeAreaView style={{ flex: 1 }}>
             <View style={{ flex: 1 }}>
-                <FotoEditorModal
-                    visible={editorFotoVisible}
-                    imageUri={fotoEmEdicao}
-                    onCancel={() => {
-                        setEditorFotoVisible(false);
-                        setFotoEmEdicao(null);
-                        setIndiceEscopoFoto(null);
-                    }}
-                    onSave={finalizarEdicaoFoto}
-                />
-
                 <FormularioRelatorioUI
                     tituloInspecao={tituloInspecao}
                     setTituloInspecao={setTituloInspecao}

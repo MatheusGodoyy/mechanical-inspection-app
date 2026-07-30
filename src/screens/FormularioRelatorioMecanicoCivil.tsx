@@ -13,7 +13,6 @@ import { ActivityIndicator } from "react-native";
 import { styles } from "../styles";
 import { ROUTES, TIPO_INSPECAO } from "../constants";
 import { ENV } from '../config';
-import { FotoEditorModal } from "../components/FotoEditorModal";
 
 const { STORAGE_KEY_RELATORIOS } = ENV;
 
@@ -39,8 +38,6 @@ export default function App({ navigation, route }: any) {
     const [erroData1, setErroData1] = useState(false);
     const [erroData2, setErroData2] = useState(false);
     const [fotoSelecionada, setFotoSelecionada] = useState<string | null>(null);
-    const [editorFotoVisible, setEditorFotoVisible] = useState(false);
-    const [fotoEmEdicao, setFotoEmEdicao] = useState<string | null>(null);
     const [indiceEscopoFoto, setIndiceEscopoFoto] = useState<number | null>(null);
     const [unidade, setUnidade] = useState("");
     const insets = useSafeAreaInsets();
@@ -148,44 +145,50 @@ export default function App({ navigation, route }: any) {
 
     // Salvar silencioso (sem Alert) — usado no auto-save ao sair
     const salvarSilencioso = async () => {
-        const dados = await AsyncStorage.getItem(STORAGE_KEY_RELATORIOS);
-        const lista = JSON.parse(dados || "[]");
+        console.log("[AutoSave] Iniciando salvamento automático:", new Date().toISOString());
+        try {
+            const dados = await AsyncStorage.getItem(STORAGE_KEY_RELATORIOS);
+            const lista = JSON.parse(dados || "[]");
 
-        let id = relatorioAtualId;
-        if (!id) {
-            id = Date.now().toString();
-            setRelatorioAtualId(id);
+            let id = relatorioAtualId;
+            if (!id) {
+                id = Date.now().toString();
+                setRelatorioAtualId(id);
+            }
+
+            const novoRelatorio = {
+                id,
+                status: statusAtual,
+                tituloInspecao,
+                tipoInspecao,
+                unidade,
+                data1,
+                data2,
+                responsavel,
+                fnEquipamento,
+                nomeEquipamento,
+                localInstalacao,
+                plano,
+                listaTarefas,
+                escopos,
+                assinatura,
+            };
+
+            const index = lista.findIndex((r: any) => r.id === id);
+
+            if (index !== -1) {
+                // Atualiza existente, preservando dados que não foram alterados
+                lista[index] = { ...lista[index], ...novoRelatorio };
+            } else {
+                // Cria novo
+                lista.push(novoRelatorio);
+            }
+
+            await AsyncStorage.setItem(STORAGE_KEY_RELATORIOS, JSON.stringify(lista));
+            console.log("[AutoSave] Salvamento automático concluído para relatório:", id);
+        } catch (err) {
+            console.warn("[AutoSave] Erro durante salvamento automático:", err);
         }
-
-        const novoRelatorio = {
-            id,
-            status: statusAtual,
-            tituloInspecao,
-            tipoInspecao,
-            unidade,
-            data1,
-            data2,
-            responsavel,
-            fnEquipamento,
-            nomeEquipamento,
-            localInstalacao,
-            plano,
-            listaTarefas,
-            escopos,
-            assinatura,
-        };
-
-        const index = lista.findIndex((r: any) => r.id === id);
-
-        if (index !== -1) {
-            // Atualiza existente, preservando dados que não foram alterados
-            lista[index] = { ...lista[index], ...novoRelatorio };
-        } else {
-            // Cria novo
-            lista.push(novoRelatorio);
-        }
-
-        await AsyncStorage.setItem(STORAGE_KEY_RELATORIOS, JSON.stringify(lista));
     };
 
     // Salvar com Alert — usado pelo botão manual
@@ -216,11 +219,34 @@ export default function App({ navigation, route }: any) {
         const unsubscribe = navigation.addListener("beforeRemove", async () => {
 
             if (!foiFinalizado.current) {  // ← adiciona essa verificação
+                console.log("[AutoSave] Detected navigation leaving screen, iniciando salvarSilencioso()");
                 await salvarSilencioso();
+                console.log("[AutoSave] salvarSilencioso() finalizado");
             }
 
         });
         return unsubscribe;
+    }, [
+        tituloInspecao, tipoInspecao, unidade, data1, data2, responsavel,
+        fnEquipamento, nomeEquipamento, localInstalacao, plano, listaTarefas,
+        escopos, assinatura, relatorioAtualId,
+    ]);
+
+    // Auto-save on any relevant change (debounced)
+    const autoSaveTimerRef = useRef<any>(null);
+    useEffect(() => {
+        if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+        autoSaveTimerRef.current = setTimeout(async () => {
+            if (!foiFinalizado.current) {
+                console.log("[AutoSave] Mudança detectada — salvando automaticamente");
+                await salvarSilencioso();
+                console.log("[AutoSave] Salvamento automático por mudança concluído");
+            }
+        }, 800);
+
+        return () => {
+            if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+        };
     }, [
         tituloInspecao, tipoInspecao, unidade, data1, data2, responsavel,
         fnEquipamento, nomeEquipamento, localInstalacao, plano, listaTarefas,
@@ -484,7 +510,7 @@ export default function App({ navigation, route }: any) {
         const { status } = await ImagePicker.requestCameraPermissionsAsync();
         if (status !== "granted") { Alert.alert("Permissão necessária", "Precisamos da câmera"); return; }
 
-        const result = await ImagePicker.launchCameraAsync({ quality: 0.7, allowsEditing: true });
+        const result = await ImagePicker.launchCameraAsync({ quality: 0.7, allowsEditing: false });
 
         if (!result.canceled) {
             const uri = result.assets[0].uri;
@@ -503,9 +529,9 @@ export default function App({ navigation, route }: any) {
                 console.warn("Erro ao salvar na galeria:", e?.message, JSON.stringify(e));
             }
 
-            setFotoEmEdicao(destino);
-            setIndiceEscopoFoto(index);
-            setEditorFotoVisible(true);
+            const escopoIndex = index;
+            setIndiceEscopoFoto(escopoIndex);
+            finalizarEdicaoFoto(destino, escopoIndex);
         }
     };
 
@@ -523,20 +549,18 @@ export default function App({ navigation, route }: any) {
             const destino = FileSystem.documentDirectory + nomeArquivo;
             await FileSystem.copyAsync({ from: uri, to: destino });
 
-            // ✅ mesma correção na galeria também
-            setFotoEmEdicao(destino);
-            setIndiceEscopoFoto(index);
-            setEditorFotoVisible(true);
+            const escopoIndex = index;
+            setIndiceEscopoFoto(escopoIndex);
+            finalizarEdicaoFoto(destino, escopoIndex);
         }
     };
 
-    const finalizarEdicaoFoto = (uriEditada: string) => {
-        if (indiceEscopoFoto === null) return;
+    const finalizarEdicaoFoto = (uriEditada: string, index: number | null = null) => {
+        const escopoIndex = index ?? indiceEscopoFoto;
+        if (escopoIndex === null) return;
         setEscopos((prev: any[]) => prev.map((item, i) =>
-            i === indiceEscopoFoto ? { ...item, fotos: [...item.fotos, uriEditada] } : item
+            i === escopoIndex ? { ...item, fotos: [...item.fotos, uriEditada] } : item
         ));
-        setEditorFotoVisible(false);
-        setFotoEmEdicao(null);
         setIndiceEscopoFoto(null);
     };
 
@@ -589,16 +613,7 @@ export default function App({ navigation, route }: any) {
     return (
         <SafeAreaView style={{ flex: 1 }}>
             <View style={{ flex: 1 }}>
-                <FotoEditorModal
-                    visible={editorFotoVisible}
-                    imageUri={fotoEmEdicao}
-                    onCancel={() => {
-                        setEditorFotoVisible(false);
-                        setFotoEmEdicao(null);
-                        setIndiceEscopoFoto(null);
-                    }}
-                    onSave={finalizarEdicaoFoto}
-                />
+
 
                 <FormularioRelatorioUI
                     tituloInspecao={tituloInspecao}
